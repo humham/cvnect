@@ -19,6 +19,8 @@ namespace common
 
     static int selectedJointIndex;
     static bool jointSelected;
+
+    static const double m_pi = 3.14159265358;
 }
 
 #endif /* _COMMON_H_ */

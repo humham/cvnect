@@ -293,6 +293,8 @@ void	CvNect::CvNect_UnInit()
 **********************************/
 void	CvNect::CvNect_Zero()
 {
+    m_seatedTrackingEnabled     = false;
+
     m_hThNuiProcess             = NULL;
     m_hEvNuiProcessStop         = NULL;
 
@@ -351,6 +353,9 @@ void	CvNect::CvNect_Zero()
     cout << "size of array 30 " << sizeof( m_jointPositionsLast30Frames ) << " " <<  sizeof( m_jointPositionsLast30PointArray ) << endl;
     
     m_jointSpeed = 0.0;
+
+    m_draw  = false;
+    m_drawZ = false;
 }
 
 
@@ -474,6 +479,29 @@ bool CvNect::StopDepthRecording()
     return 1;
 }
 
+/**********************************
+*
+*
+**********************************/
+void    CvNect::UpdateSkeletonTrackingSeatedModeFlag( DWORD flag , bool value )
+{
+    HRESULT hr;
+
+    hr = NuiSkeletonTrackingEnable( m_hNextSkeletonFrameEvent, value );
+
+    if ( FAILED( hr ) )
+    {
+        cout << "Failed to change skeleton tracking mode..." << endl;
+    }
+    else
+    {
+        cout << "success..." << endl;
+
+        m_seatedTrackingEnabled = value;
+    }
+
+}
+
 
 /// <summary>
 /// Thread to handle Kinect processing, calls class instance thread processor
@@ -508,7 +536,7 @@ DWORD WINAPI CvNect::Nui_ProcessThread( )
         t = timeGetTime( );
 
         // Wait for any of the events to be signalled
-        nEventIdx = WaitForMultipleObjects( numEvents, hEvents, FALSE, 1000 );
+        nEventIdx = WaitForMultipleObjects( numEvents, hEvents, FALSE, INFINITE );
 
         // Timed out, continue
         if ( nEventIdx == WAIT_TIMEOUT )
@@ -781,6 +809,18 @@ int CvNect::drawSkeleton( DWORD time )
 
     bool bFoundSkeleton = false;
 
+    int  max_pos_count = 0;
+
+    if( m_seatedTrackingEnabled )
+    {
+        max_pos_count = 11;
+    }
+    else
+    {
+        max_pos_count = NUI_SKELETON_POSITION_COUNT;
+    }
+
+
     for( int i = 0 ; i < NUI_SKELETON_COUNT ; i++ )
     {
         if( m_SkeletonFrame.SkeletonData[ i ].eTrackingState == NUI_SKELETON_TRACKED )
@@ -804,8 +844,9 @@ int CvNect::drawSkeleton( DWORD time )
             if( m_SkeletonFrame.SkeletonData[i].eTrackingState == NUI_SKELETON_TRACKED )
             {
 
-                for(int j = 0; j < NUI_SKELETON_POSITION_COUNT; j++)
+                for(int j = 0; j < max_pos_count; j++)
                 {
+                    
 
                     float fx,fy;
 
@@ -842,17 +883,19 @@ int CvNect::drawSkeleton( DWORD time )
                         cvCircle( skeleton , pt[j] , 5 , m_color_skeletonColorGreen , -1 );
                     }
                     
+                    
                 }
 
                 
-
+                //cout << "m_jointPositionLast30FrameCount: " << m_jointPositionLast30FrameCount  << endl;
                 m_heightTextPositions[ i ] = pt[NUI_SKELETON_POSITION_HEAD];
 
                 cvLine(skeleton,pt[NUI_SKELETON_POSITION_HEAD],pt[NUI_SKELETON_POSITION_SHOULDER_CENTER],CV_RGB(0,255,0));
                 cvLine(skeleton,pt[NUI_SKELETON_POSITION_SHOULDER_CENTER],pt[NUI_SKELETON_POSITION_SPINE],CV_RGB(0,255,0));
                 cvLine(skeleton,pt[NUI_SKELETON_POSITION_SPINE],pt[NUI_SKELETON_POSITION_HIP_CENTER],CV_RGB(0,255,0));
 
-                cvLine(skeleton,pt[NUI_SKELETON_POSITION_HAND_RIGHT],pt[NUI_SKELETON_POSITION_WRIST_RIGHT],CV_RGB(0,255,0));
+                
+                //hand right wrist right
                 cvLine(skeleton,pt[NUI_SKELETON_POSITION_WRIST_RIGHT],pt[NUI_SKELETON_POSITION_ELBOW_RIGHT],CV_RGB(0,255,0));
                 cvLine(skeleton,pt[NUI_SKELETON_POSITION_ELBOW_RIGHT],pt[NUI_SKELETON_POSITION_SHOULDER_RIGHT],CV_RGB(0,255,0));
                 cvLine(skeleton,pt[NUI_SKELETON_POSITION_SHOULDER_RIGHT],pt[NUI_SKELETON_POSITION_SHOULDER_CENTER],CV_RGB(0,255,0));
@@ -862,15 +905,20 @@ int CvNect::drawSkeleton( DWORD time )
                 cvLine(skeleton,pt[NUI_SKELETON_POSITION_ELBOW_LEFT],pt[NUI_SKELETON_POSITION_WRIST_LEFT],CV_RGB(0,255,0));
                 cvLine(skeleton,pt[NUI_SKELETON_POSITION_WRIST_LEFT],pt[NUI_SKELETON_POSITION_HAND_LEFT],CV_RGB(0,255,0));
 
-                cvLine(skeleton,pt[NUI_SKELETON_POSITION_HIP_CENTER],pt[NUI_SKELETON_POSITION_HIP_RIGHT],CV_RGB(0,255,0));
-                cvLine(skeleton,pt[NUI_SKELETON_POSITION_HIP_RIGHT],pt[NUI_SKELETON_POSITION_KNEE_RIGHT],CV_RGB(0,255,0));
-                cvLine(skeleton,pt[NUI_SKELETON_POSITION_KNEE_RIGHT],pt[NUI_SKELETON_POSITION_ANKLE_RIGHT],CV_RGB(0,255,0));
-                cvLine(skeleton,pt[NUI_SKELETON_POSITION_ANKLE_RIGHT],pt[NUI_SKELETON_POSITION_FOOT_RIGHT],CV_RGB(0,255,0));
+                if( !m_seatedTrackingEnabled )
+                {
+                    cvLine(skeleton,pt[NUI_SKELETON_POSITION_HAND_RIGHT],pt[NUI_SKELETON_POSITION_WRIST_RIGHT],CV_RGB(0,255,0));
 
-                cvLine(skeleton,pt[NUI_SKELETON_POSITION_HIP_CENTER],pt[NUI_SKELETON_POSITION_HIP_LEFT],CV_RGB(0,255,0));
-                cvLine(skeleton,pt[NUI_SKELETON_POSITION_HIP_LEFT],pt[NUI_SKELETON_POSITION_KNEE_LEFT],CV_RGB(0,255,0));
-                cvLine(skeleton,pt[NUI_SKELETON_POSITION_KNEE_LEFT],pt[NUI_SKELETON_POSITION_ANKLE_LEFT],CV_RGB(0,255,0));
-                cvLine(skeleton,pt[NUI_SKELETON_POSITION_ANKLE_LEFT],pt[NUI_SKELETON_POSITION_FOOT_LEFT],CV_RGB(0,255,0));
+                    cvLine(skeleton,pt[NUI_SKELETON_POSITION_HIP_CENTER],pt[NUI_SKELETON_POSITION_HIP_RIGHT],CV_RGB(0,255,0));
+                    cvLine(skeleton,pt[NUI_SKELETON_POSITION_HIP_RIGHT],pt[NUI_SKELETON_POSITION_KNEE_RIGHT],CV_RGB(0,255,0));
+                    cvLine(skeleton,pt[NUI_SKELETON_POSITION_KNEE_RIGHT],pt[NUI_SKELETON_POSITION_ANKLE_RIGHT],CV_RGB(0,255,0));
+                    cvLine(skeleton,pt[NUI_SKELETON_POSITION_ANKLE_RIGHT],pt[NUI_SKELETON_POSITION_FOOT_RIGHT],CV_RGB(0,255,0));
+
+                    cvLine(skeleton,pt[NUI_SKELETON_POSITION_HIP_CENTER],pt[NUI_SKELETON_POSITION_HIP_LEFT],CV_RGB(0,255,0));
+                    cvLine(skeleton,pt[NUI_SKELETON_POSITION_HIP_LEFT],pt[NUI_SKELETON_POSITION_KNEE_LEFT],CV_RGB(0,255,0));
+                    cvLine(skeleton,pt[NUI_SKELETON_POSITION_KNEE_LEFT],pt[NUI_SKELETON_POSITION_ANKLE_LEFT],CV_RGB(0,255,0));
+                    cvLine(skeleton,pt[NUI_SKELETON_POSITION_ANKLE_LEFT],pt[NUI_SKELETON_POSITION_FOOT_LEFT],CV_RGB(0,255,0));
+                }
 
                 if( time - m_LastDrawSkeletonTime > 1000 )
                 {
@@ -912,11 +960,28 @@ int CvNect::drawSkeleton( DWORD time )
                     sprintf_s( m_heightText[ i ] , sizeof( m_skeletonHeight[ i ] ) , "%.2lf" , m_skeletonHeight[ i ] );
 
                     cout << m_skeletonHeight[ i ] << " text:" << m_heightText[ i ] << " i:" << i << endl;
+
+                    
                 }
 
-                if( m_jointPositionLast30FrameCount > 0 && common::jointSelected )
+                if( common::jointSelected )
                 {
-                    drawPolyLineAtJointPositions();
+                    if( m_jointPositionLast30FrameCount > 0 )
+                    {
+                        drawPolyLineAtJointPositions();
+                    }
+
+                    if( m_jointPositionLast30FrameCount == 29 )
+                    {
+                        // detect direction of selected joint at every 30th frame
+                        detectDirectionOfSelectedJointMotion( m_jointPositionsLast30Frames[ 0 ] , m_jointPositionsLast30Frames[ 29 ] );
+                    }
+
+                    if( m_draw )
+                    {
+                        drawDirectedJointMotion( m_jointPositionStart , m_jointPositionEnd , cvScalar( (1 / m_jointSpeed) * 40 , 0.0 , m_jointSpeed * 150 ) , (int)(m_jointSpeed * 20) );
+                    }
+                    
                 }
 
                 cvPutText( skeleton , m_heightText[ i ] , cvPoint( m_heightTextPositions[ i ].x , m_heightTextPositions[ i ].y - 20 ) , &m_font , cvScalar( 255 , 255 , 255 ) );
@@ -977,6 +1042,26 @@ void     CvNect::SetMouseColorCoordinates( int x , int y )
 double CvNect::length( Vector4 j1 , Vector4 j2 )
 {
     return sqrtf( pow( j1.x - j2.x , 2 ) + pow( j1.y - j2.y , 2 ) + pow( j1.z - j2.z , 2 ) );
+}
+
+
+/**********************************
+*
+*
+**********************************/
+double CvNect::length2D( CvPoint p1 , CvPoint p2 )
+{
+    return sqrtf( pow( (double)(p1.x - p2.x) , 2 ) + pow( (double)(p1.y - p2.y) , 2 ) );
+}
+
+
+/**********************************
+*
+*
+**********************************/
+double CvNect::magnitude1D( float p1 , float p2 )
+{
+    return sqrt( pow( p1 - p2 , 2 ) );
 }
 
 
@@ -1078,7 +1163,7 @@ double CvNect::calculateSkeletonHeight( int skeletonIndex )
 * This function is called from drawSkeleton every 500 ms if a joint is selected
 * 
 **********************************/
-double CvNect::calculateSpeedOfSelectedJoint()
+double  CvNect::calculateSpeedOfSelectedJoint()
 {
     double speed = 0.0;
 
@@ -1098,7 +1183,7 @@ double CvNect::calculateSpeedOfSelectedJoint()
 * Using last 30 frame points for the selected joint, draw a poly line tracing the movement
 * 
 **********************************/
-void CvNect::drawPolyLineAtJointPositions()
+void    CvNect::drawPolyLineAtJointPositions()
 {
     double jointTravelLength = 0.0;
 
@@ -1106,6 +1191,181 @@ void CvNect::drawPolyLineAtJointPositions()
     {
         cvLine( skeleton , m_jointPositionsLast30PointArray[ i ] , m_jointPositionsLast30PointArray[ i + 1 ] , CV_RGB( 255 , 255 , 255 ) );
         jointTravelLength += length( m_jointPositionsLast30Frames[ i ] , m_jointPositionsLast30Frames[ i + 1 ] );
+
+        if( i == 0 )
+        {
+            m_jointPositionStart = m_jointPositionsLast30PointArray[ i ];
+        }
+        else if( i == m_jointPositionLast30FrameCount - 2 )
+        {
+            m_jointPositionEnd = m_jointPositionsLast30PointArray[ i + 1 ];
+        }
     }
     m_jointSpeed = jointTravelLength;
+}
+
+
+/**********************************
+* This function is called every second with start and end positions of the selected joint
+* It will first detect the direction of movement comparing displacement on each axis and
+* draw an arrow scaling and changing color with the magnitutde of the speed of currently selected joint
+**********************************/
+void    CvNect::detectDirectionOfSelectedJointMotion( Vector4 jointPositionStarts , Vector4 jointPositionEnds )
+{
+    cout  << "detectDirectionOfSelectedJointMotion frame count: " << m_jointPositionLast30FrameCount << endl;
+
+    // detect direction first
+    double lx = magnitude1D( jointPositionStarts.x , jointPositionEnds.x );
+    double ly = magnitude1D( jointPositionStarts.y , jointPositionEnds.y );
+    double lz = magnitude1D( jointPositionStarts.z , jointPositionEnds.z );
+
+    cout  << "detectDirectionOfSelectedJointMotion lx: " << lx << " ly: " << ly << " lz: " << lz << endl;
+
+    //lx > ly > lz
+    //lx > ly < lz
+    //lx < ly > lz
+    //lx < ly < lz
+
+    m_draw = false;
+    bool directionZ = false;
+
+    if( lx >= ly && lx >= lz && lx >= 0.002 )
+    {
+        cout << "direction of movement is X" << endl;
+        m_drawZ = false;
+        m_draw = true;
+    }
+    else if( lz >= ly && lz >= lx && lz >= 0.002 )
+    {
+        cout << "direction of movement is Z" << endl;
+        m_drawZ = true;
+
+        if( jointPositionStarts.z < jointPositionEnds.z )
+        {
+            directionZ = true;
+        }
+
+        m_draw = false;
+    }
+    else if( ly >= lx && ly >= lz && ly >= 0.002 )
+    {
+        cout << "direction of movement is Y" << endl;
+        m_drawZ = false;
+        m_draw = true;
+    }
+    else
+    {
+        cout << "NO SIGNIFICANT MOVEMENT RECORDED lx: " << lx << " ly: " << ly << " lz: " << lz << endl;
+        m_draw = false;
+    }
+
+}
+
+
+/**********************************
+*
+**********************************/
+void    CvNect::drawDirectedJointMotion( CvPoint p1 , CvPoint p2 , CvScalar color , int tickness )
+{
+
+    double slope = 0.0;
+    double angle = 0.0;
+
+    /*cout << "p2.y: " << p2.y << " p1.y: " << p1.y << " p2.x: " << p2.x << "p1.x: " << p1.x << endl;*/
+    slope = (double)( p2.y - p1.y ) / (double)( p2.x - p1.x );
+    angle = atan( slope );
+
+    /*cout << "slope: " << slope << " angle: " << angle << endl;*/
+
+
+        /* double s60 = sin(60 * M_PI / 180.0);    
+  double c60 = cos(60 * M_PI / 180.0);
+
+  Point v = {
+    c60 * (p1.x - p2.x) - s60 * (p1.y - p2.y) + p2.x,
+    s60 * (p1.x - p2.x) + c60 * (p1.y - p2.y) + p2.y
+  };*/
+
+    // ( y - y1 ) = m ( x - x1 )
+    // using the point-slope form pick a point along the p1-p2 line to draw arrow head
+
+    /*double s60 = sin(60 * common::m_pi / 180.0);    
+    double c60 = cos(60 * common::m_pi / 180.0);
+
+    
+
+    arrowReference.x = c60 * ( p1.x - p2.x ) - s60 * ( p1.y - p2.y ) + p2.x;
+    arrowReference.y = s60 * ( p1.x - p2.x ) - c60 * ( p1.y - p2.y ) + p2.y;*/
+
+    double length = length2D( p1 , p2 );
+    /*cout << "length: " << length << endl;*/
+
+    length /= 5;
+
+    CvPoint arrowReference1;
+    CvPoint arrowReference2;
+
+    // temporarily disable z axis representation
+    m_drawZ = false;
+
+    if( m_drawZ )
+        {
+            cvCircle( skeleton , p1 , tickness , color );
+        }
+        else
+        {
+            cvLine( skeleton , p1 , p2 , color , tickness );
+
+            // draw arrow heads
+            if( p2.x < p1.x )
+            {
+                arrowReference1.x = p2.x + ( length ) * cos( angle + 45 );
+                arrowReference1.y = p2.y + ( length ) * sin( angle + 45 );
+
+                arrowReference2.x = p2.x + ( length ) * cos( angle - 45 );
+                arrowReference2.y = p2.y + ( length ) * sin( angle - 45 );
+
+                //// arrow pointing left
+                //if( p2.y < p1.y )
+                //{
+                //    // arrow pointing down
+                //    arrowReference2.x = p2.x - ( length ) * cos( angle + 45 );
+                //    arrowReference2.y = p2.y + ( length ) * sin( angle + 45 );
+                //}
+                //else
+                //{
+                //    // arrow pointing up
+                //    arrowReference2.x = p2.x + ( length ) * cos( angle + 45 );
+                //    arrowReference2.y = p2.y - ( length ) * sin( angle + 45 );
+                //}
+                
+            }
+            else
+            {
+                arrowReference1.x = p2.x - ( length ) * cos( angle + 45 );
+                arrowReference1.y = p2.y - ( length ) * sin( angle + 45 );
+
+                arrowReference2.x = p2.x - ( length ) * cos( angle - 45 );
+                arrowReference2.y = p2.y - ( length ) * sin( angle - 45 );
+
+                //// arrow pointing right
+                //if( p2.y < p1.y )
+                //{
+                //    // arrow pointing down
+                //    cvLine( skeleton , p2 , cvPoint( p2.x - ( m_jointSpeed * 50 ) , p2.y ) , color , tickness );
+                //    cvLine( skeleton , p2 , cvPoint( p2.x , p2.y + ( m_jointSpeed * 50 ) ) , color , tickness );
+                //}
+                //else
+                //{
+                //    // arrow pointing up
+                //    cvLine( skeleton , p2 , cvPoint( p2.x - ( m_jointSpeed * 50 ) , p2.y ) , color , tickness );
+                //    cvLine( skeleton , p2 , cvPoint( p2.x , p2.y - ( m_jointSpeed * 50 ) ) , color , tickness );
+                //}
+            }
+            
+
+            cvLine( skeleton , p2 , arrowReference1 , color , tickness );
+            cvLine( skeleton , p2 , arrowReference2 , color , tickness );
+            
+        }
 }

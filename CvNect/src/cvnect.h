@@ -68,7 +68,12 @@ public:
     bool                    StopSkeletonRecording();
 
     void                    SetMouseColorCoordinates( int x , int y );
+
+    void                    UpdateSkeletonTrackingSeatedModeFlag( DWORD flag , bool value );
+
 private:
+
+    bool    m_seatedTrackingEnabled;
 
     /// <summary>
     /// Thread to handle Kinect processing, calls class instance thread processor
@@ -152,6 +157,8 @@ private:
 
     // function to calculate 3d length between 2 given joints
     double  length( Vector4 j1 , Vector4 j2 );
+    double  length2D( CvPoint p1 , CvPoint p2 );
+    double  magnitude1D( float p1 , float p2 );
 
     // determine which leg is tracked better
     int     numberOfTrackedJoints( NUI_SKELETON_POSITION_TRACKING_STATE state[] , int size );
@@ -173,8 +180,17 @@ private:
 
     void        drawPolyLineAtJointPositions();
 
-    double  calculateSpeedOfSelectedJoint();
-    double  m_jointSpeed;
+    double      calculateSpeedOfSelectedJoint();
+    double      m_jointSpeed;
+
+    void        detectDirectionOfSelectedJointMotion( Vector4 jointPositionStarts , Vector4 jointPositionEnds );
+    void        drawDirectedJointMotion( CvPoint p1 , CvPoint p2 , CvScalar color , int tickness );
+    CvPoint     m_jointPositionStart;
+    CvPoint     m_jointPositionEnd;
+    bool        m_draw;
+    bool        m_drawZ;
+
+    // drawZ , m_jointPositionsLast30PointArray[ 0 ] , m_jointPositionsLast30PointArray[ 29 ] , CV_RGB( ( 255 ) , 0 , 0 ) , 5 );
 
 protected:
 

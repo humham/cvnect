@@ -87,7 +87,8 @@ int main( int argc , char **argv )
 
     bool /*toggleColorRecord      = false ,*/
         toggleDepthRecord      = false ,
-        toggleSkeletonRecord   = false;
+        toggleSkeletonRecord   = false ,
+        toggleSeatedMode       = false;
 
     int  /*colorFileNumber    = 0 ,*/
         depthFileNumber    = 0 ,
@@ -243,6 +244,28 @@ int main( int argc , char **argv )
                     cout << "Camera angle is too low: " << elevationAngle << endl;
                 }
 
+                break;
+
+            case 's'    :
+            case 'S'    :
+
+                if( !toggleSeatedMode )
+                {
+                    cout << "Changing skeleton tracking mode to seated..." << endl;
+
+                    toggleSeatedMode = true;
+                }
+                else
+                {
+                    cout << "Changing skeleton tracking mode to default..." << endl;
+
+                    toggleSeatedMode = false;
+                }
+
+                CvNectApp.UpdateSkeletonTrackingSeatedModeFlag( NUI_SKELETON_TRACKING_FLAG_ENABLE_SEATED_SUPPORT , toggleSeatedMode );
+
+                /*NUI_SKELETON_TRACKING_FLAG_ENABLE_SEATED_SUPPORT,
+        (mode == SV_TRACKING_MODE_SEATED) );*/
                 break;
 
             case 27		:
