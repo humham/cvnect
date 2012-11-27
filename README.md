@@ -1,8 +1,15 @@
 ======
-cvnect v1.0
+cvnect v1.271112
 ======
 
 a project using microsoft kinect sdk and opencv
+
+======
+changelog v1.271112
+======
+
+- CvNect::UpdateSkeletonTrackingSeatedModeFlag function added for toggling seated skeleton tracking mode on/off. (activated from using keyboard by pressing 's')
+- CvNect::length2D , magnitude1D , CvNect::detectDirectionOfSelectedJointMotion  , CvNect::drawDirectedJointMotion functions added for detecting direction of movement of the selected joint and an arrow representing direction of movement vector with size and color changing as a subject of speed added.
 
 ======
 Compile
