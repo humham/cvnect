@@ -1,7 +1,6 @@
-
 CvNect v1.0	                                                             
 ==============================
-(Update 04.11.2013)
+(Update 14.11.2013)
                                                                                         
 A project to display Microsoft Kinect's depth and color streams inside OpenCV windows
 and record individual streams by pressing dedicated keys.                                   
@@ -18,7 +17,8 @@ and record individual streams by pressing dedicated keys.
 --------------------------------------
 -	Space bar			||	Reset Kinect tilt angle                                             
 -	'c'                 ||  Toggle record color stream                                               	
--	'd'                 ||  Toggle record depth stream                                                 
+-	'd'                 ||  Toggle record depth stream
+-	'b'                 ||  Toggle record both streams simultaneously 
 -	'q' / Escape        ||  Exit                                                                
 
 Kerem Gocen                                                      
