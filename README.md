@@ -7,9 +7,10 @@ A project to display Microsoft Kinect's depth and color streams inside OpenCV wi
 and record individual streams by pressing dedicated keys.                                   
 
 -	Compiled using Microsoft Visual Studio Express 2012                                         
-    **MS Kinect SDK version:1.8 - OpenCV version:2.4.2**
+    **MS Kinect SDK version:1.8 - OpenCV version:2.4.7**
 	
--	Required precompiled DLLs: *opencv_core242.dll, opencv_highgui242.dll, opencv_imgproc242.dll*
+-	Required precompiled DLLs: *opencv_core247.dll, opencv_highgui247.dll, opencv_imgproc247.dll*
+-	OpenCV environment variable "OPENCV_DIR" should be defined to show the location of the opencv folder.
 
 **Usage**                                                                                   
 ---------
@@ -22,5 +23,5 @@ and record individual streams by pressing dedicated keys.
 
 Kerem Gocen                                                      
 ---------------------------------------
-https://github.com/humham
+https://github.com/keremgocen
 @humham

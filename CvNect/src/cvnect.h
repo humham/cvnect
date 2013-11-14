@@ -33,11 +33,11 @@ enum writerState_e
 
 class CvNect
 {
-    static const int    COLOR_WIDTH             = 640;
-    static const int    COLOR_HEIGHT            = 480;
-    static const int    DEPTH_WIDTH             = 640;
-    static const int    DEPTH_HEIGHT            = 480;
-    static const int    CHANNEL                 = 3;
+    static const int	COLOR_WIDTH		= 640;
+    static const int	COLOR_HEIGHT	= 480;
+    static const int	DEPTH_WIDTH		= 640;
+    static const int	DEPTH_HEIGHT	= 480;
+    static const int	CHANNEL			= 3;
 
 public:
 
@@ -55,22 +55,22 @@ public:
     /// Initialize Kinect
     /// </summary>
     /// <returns>S_OK if successful, otherwise an error code</returns>
-    HRESULT                 CvNect_Init( );
+    HRESULT	CvNect_Init( );
 
     /// <summary>
     /// Uninitialize Kinect
     /// </summary>
-    void                    CvNect_UnInit( );
+    void	CvNect_UnInit( );
 
     /// <summary>
     /// Zero out member variables
     /// </summary>
-    void                    CvNect_Zero( );
+    void	CvNect_Zero( );
 
-    string                  StartColorRecording( int fileNumber );
-    bool                    StopColorRecording();
-    string                  StartDepthRecording( int fileNumber );
-    bool                    StopDepthRecording();
+    string	StartColorRecording( int fileNumber );
+    bool	StopColorRecording();
+    string	StartDepthRecording( int fileNumber );
+    bool	StopDepthRecording();
 
 private:
 
@@ -79,26 +79,26 @@ private:
     /// </summary>
     /// <param name="pParam">instance pointer</param>
     /// <returns>always 0</returns>
-    static DWORD WINAPI     Nui_ProcessThread( LPVOID pParam );
+    static DWORD WINAPI	Nui_ProcessThread( LPVOID pParam );
 
     /// <summary>
     /// Thread to handle Kinect processing
     /// </summary>
     /// <returns>always 0</returns>
-    DWORD WINAPI            Nui_ProcessThread( );
+    DWORD WINAPI	Nui_ProcessThread( );
 
     // thread handling
-    HANDLE        m_hThNuiProcess;
-    HANDLE        m_hEvNuiProcessStop;
+    HANDLE	m_hThNuiProcess;
+    HANDLE	m_hEvNuiProcessStop;
 
-    HANDLE        m_hEvWaitColorWrite;
-    HANDLE        m_hEvWaitDepthWrite;
+    HANDLE	m_hEvWaitColorWrite;
+    HANDLE	m_hEvWaitDepthWrite;
 
-    HANDLE        m_hNextColorFrameEvent;
-    HANDLE        m_hNextDepthFrameEvent;
+    HANDLE	m_hNextColorFrameEvent;
+    HANDLE	m_hNextDepthFrameEvent;
 
-    HANDLE        m_pVideoStreamHandle;
-    HANDLE        m_pDepthStreamHandle;
+    HANDLE	m_pVideoStreamHandle;
+    HANDLE	m_pDepthStreamHandle;
 
     // OpenCV image buffer and video writers
     IplImage      *color;
@@ -107,20 +107,22 @@ private:
     VideoWriter	  m_vWriterColor;
     VideoWriter	  m_vWriterDepth;
 
-    bool          m_recordColor;
-    bool          m_recordDepth;
+	CvFont	m_cvFont;
 
-    int           drawColor();
-    int           drawDepth();
+    bool	m_recordColor;
+    bool	m_recordDepth;
 
-    int           m_ColorFramesTotal;
-    int           m_LastColorFramesTotal;
+    int		drawColor();
+    int		drawDepth();
 
-    int           m_DepthFramesTotal;
-    int           m_LastDepthFramesTotal;
+    int		m_ColorFramesTotal;
+    int		m_LastColorFramesTotal;
 
-    int           m_fpsColor;
-    int           m_fpsDepth;
+    int		m_DepthFramesTotal;
+    int		m_LastDepthFramesTotal;
+
+    int		m_fpsColor;
+    int		m_fpsDepth;
 
 protected:
 

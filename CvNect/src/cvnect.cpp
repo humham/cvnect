@@ -21,8 +21,8 @@ HRESULT	CvNect::CvNect_Init()
     color       = cvCreateImageHeader( cvSize( COLOR_WIDTH , COLOR_HEIGHT )         , IPL_DEPTH_8U , 4       );
     depth       = cvCreateImageHeader( cvSize( DEPTH_WIDTH , DEPTH_HEIGHT )         , IPL_DEPTH_8U , CHANNEL );
 
-    cvNamedWindow( "RGB"	, CV_WINDOW_AUTOSIZE );
-    cvNamedWindow( "Depth"	, CV_WINDOW_AUTOSIZE );
+    cv::namedWindow( "RGB"	, CV_WINDOW_AUTOSIZE );
+    cv::namedWindow( "Depth"	, CV_WINDOW_AUTOSIZE );
 
 	HRESULT hr = NuiInitialize( NUI_INITIALIZE_FLAG_USES_COLOR | NUI_INITIALIZE_FLAG_USES_DEPTH );
 
@@ -85,7 +85,9 @@ HRESULT	CvNect::CvNect_Init()
 
     // Start the Nui processing thread
     m_hEvNuiProcessStop = CreateEvent( NULL, FALSE, FALSE, NULL );
-    m_hThNuiProcess     = CreateThread( NULL, 0, Nui_ProcessThread, this, 0, NULL );	
+    m_hThNuiProcess     = CreateThread( NULL, 0, Nui_ProcessThread, this, 0, NULL );
+	
+	cvInitFont( &m_cvFont , CV_FONT_HERSHEY_PLAIN , 1.3 , 1.3 , 0 , 1 );
 
     return hr;
 }
@@ -140,8 +142,7 @@ void	CvNect::CvNect_UnInit()
     }
 
 	// close openCV windows
-    cvDestroyWindow("RGB");
-    cvDestroyWindow( "Depth" );
+	cv::destroyAllWindows();
 
 	// shut down NUI interface
     NuiShutdown();
@@ -382,11 +383,13 @@ int CvNect::drawColor()
         {
 			Mat iplimg( color , true );
 
-			m_vWriterColor.write( color );
+			m_vWriterColor << color;
         }
 
         SetEvent( m_hEvWaitColorWrite );
     }
+
+	cvPutText(color, "C:record color | B:record both | Space:reset angle", cvPoint(10,COLOR_HEIGHT-20), &m_cvFont, cvScalar(255, 255, 255));
 
     cvShowImage("RGB",color);
 
@@ -496,12 +499,13 @@ int CvNect::drawDepth()
         {
             Mat iplimg( depth , true );
 
-            m_vWriterDepth.write( depth );
+            m_vWriterDepth << depth;
         }
 
         SetEvent( m_hEvWaitDepthWrite );
-
     }
+
+	cvPutText(depth, "D:record depth | B:record both | Space:reset angle", cvPoint(10,DEPTH_HEIGHT-20), &m_cvFont, cvScalar(255, 255, 255));
 
 	cvShowImage("Depth",depth);
 
